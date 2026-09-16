@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MNIST Digit Classifier</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main>
+    <section class="drawing-panel">
+      <p class="eyebrow">MNIST classifier</p>
+      <h1>Draw a digit</h1>
+      <p class="intro">Draw any number from 0 to 9. The model updates its prediction as you draw.</p>
+
+      <canvas id="drawingCanvas" width="280" height="280"></canvas>
+
+      <div class="controls">
+        <label for="brushSize">Brush size</label>
+        <input id="brushSize" type="range" min="10" max="32" value="20">
+        <button id="clearButton" type="button">Clear</button>
+      </div>
+    </section>
+
+    <section class="results-panel">
+      <p class="eyebrow">Live result</p>
+      <div class="prediction">
+        <span>Prediction</span>
+        <strong id="predictionValue">—</strong>
+      </div>
+      <p id="status">Start drawing to see the probabilities.</p>
+      <div id="probabilityList" class="probability-list"></div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
