@@ -34,6 +34,20 @@ docker run --rm -p 8000:8000 mnist-cloud-devops
 
 The Docker image uses ONNX Runtime on the CPU, so the deployment machine does not need PyTorch or an NVIDIA GPU.
 
+## Run with Docker Compose
+
+Build and start the application:
+
+```bash
+docker compose up --build
+```
+
+Open `http://127.0.0.1:8000`. Stop and remove the container with:
+
+```bash
+docker compose down
+```
+
 ## Train the model
 
 The trained checkpoint is included at `artifacts/best_model.pt`. To train it again:
