@@ -32,7 +32,7 @@ Start the container:
 docker run --rm -p 8000:8000 mnist-cloud-devops
 ```
 
-The Docker image uses CPU-only PyTorch, so the deployment machine does not need an NVIDIA GPU.
+The Docker image uses ONNX Runtime on the CPU, so the deployment machine does not need PyTorch or an NVIDIA GPU.
 
 ## Train the model
 
