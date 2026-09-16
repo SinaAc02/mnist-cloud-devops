@@ -6,13 +6,12 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
 COPY requirements-runtime.txt .
-RUN pip install --no-cache-dir torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r requirements-runtime.txt
 
 COPY app.py .
-COPY src ./src
+COPY src/__init__.py src/preprocessing.py ./src/
 COPY static ./static
-COPY artifacts/best_model.pt ./artifacts/best_model.pt
+COPY artifacts/mnist_model.onnx ./artifacts/mnist_model.onnx
 
 EXPOSE 8000
 

@@ -1,15 +1,7 @@
 """Prepare a canvas image for the MNIST model."""
 
+import numpy as np
 from PIL import Image
-from torchvision import transforms
-
-
-normalize = transforms.Compose(
-    [
-        transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,)),
-    ]
-)
 
 
 def preprocess_image(image: Image.Image):
@@ -27,5 +19,7 @@ def preprocess_image(image: Image.Image):
     top = (28 - digit.height) // 2
     mnist_image.paste(digit, (left, top))
 
-    tensor = normalize(mnist_image).unsqueeze(0)
-    return tensor, mnist_image
+    model_input = np.asarray(mnist_image, dtype=np.float32) / 255.0
+    model_input = (model_input - 0.1307) / 0.3081
+    model_input = model_input[np.newaxis, np.newaxis, :, :]
+    return model_input, mnist_image

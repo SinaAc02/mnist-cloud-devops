@@ -1,11 +1,11 @@
 from io import BytesIO
 
 import pytest
-import torch
+import numpy as np
 from fastapi.testclient import TestClient
 from PIL import Image, ImageDraw
 
-from app import app, model
+from app import app, session
 from src.preprocessing import preprocess_image
 
 
@@ -65,14 +65,15 @@ def test_non_png_file_is_rejected():
 
 def test_preprocessing_creates_model_shape():
     image = Image.open(BytesIO(make_png()))
-    tensor, processed_image = preprocess_image(image)
+    model_input, processed_image = preprocess_image(image)
 
-    assert tensor.shape == (1, 1, 28, 28)
+    assert model_input.shape == (1, 1, 28, 28)
+    assert model_input.dtype == np.float32
     assert processed_image.size == (28, 28)
 
 
 def test_model_produces_ten_scores():
-    with torch.no_grad():
-        output = model(torch.zeros(1, 1, 28, 28))
+    model_input = np.zeros((1, 1, 28, 28), dtype=np.float32)
+    output = session.run(None, {"image": model_input})[0]
 
     assert output.shape == (1, 10)

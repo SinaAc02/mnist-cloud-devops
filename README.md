@@ -44,6 +44,14 @@ python train.py
 
 MNIST is downloaded into `data/` automatically. Training uses CUDA and saves the checkpoint with the lowest validation loss.
 
+Export the trained checkpoint for production inference:
+
+```bash
+python export_onnx.py
+```
+
+The API and Docker image use `artifacts/mnist_model.onnx` with ONNX Runtime. PyTorch is only needed for training and exporting.
+
 ## Run the tests
 
 ```bash
