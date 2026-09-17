@@ -73,3 +73,16 @@ python -m pytest -v
 ```
 
 The tests cover model loading, preprocessing, predictions, and API error responses.
+
+## CI/CD
+
+GitHub Actions runs the tests, validates Terraform, and checks the Docker build on every push and pull request. A push to `main` also publishes the image to GitHub Container Registry and deploys it to the Azure VM.
+
+Add these repository secrets before enabling deployment:
+
+- `VM_HOST`: the VM public IP address
+- `VM_USER`: `azureuser`
+- `VM_SSH_KEY`: the complete contents of the VM private key file
+- `VM_KNOWN_HOSTS`: the verified SSH known-host entry for the VM
+
+The deployed image receives both `latest` and Git commit hash tags. The commit hash identifies the exact version running on the server.

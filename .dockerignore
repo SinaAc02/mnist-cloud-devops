@@ -9,3 +9,6 @@ artifacts/*.png
 artifacts/*.pt
 artifacts-smoke
 tests
+terraform/.terraform
+terraform/*.tfstate*
+terraform/terraform.tfvars
