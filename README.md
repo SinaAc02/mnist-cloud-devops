@@ -1,88 +1,85 @@
 # MNIST Digit Classifier
 
-A small PyTorch and FastAPI application that recognizes digits drawn in the browser. The interface shows live probabilities for every digit from 0 to 9 and works on desktop and mobile screens.
+Draw a digit in the browser and see the prediction and probabilities for digits
+0-9. The app uses a PyTorch-trained CNN exported to ONNX, with FastAPI and
+ONNX Runtime serving predictions on the CPU.
 
-## Run the application
+## Run locally
 
-Install the dependencies:
+The repository includes the exported model. Create an environment and install
+the runtime dependencies:
 
-```bash
-python -m pip install -r requirements.txt
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-runtime.txt
+.\.venv\Scripts\python.exe -m uvicorn app:app --reload
 ```
 
-Start FastAPI:
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000), draw a digit and adjust the
+brush size as needed. Predictions update as you draw. On other systems, use the
+Python executable from your virtual environment.
 
-```bash
-python -m uvicorn app:app --reload
-```
-
-Open `http://127.0.0.1:8000`.
-
-## Run with Docker
-
-Build the image:
+## Docker
 
 ```bash
 docker build -t mnist-cloud-devops .
-```
-
-Start the container:
-
-```bash
 docker run --rm -p 8000:8000 mnist-cloud-devops
 ```
 
-The Docker image uses ONNX Runtime on the CPU, so the deployment machine does not need PyTorch or an NVIDIA GPU.
+The image installs `requirements-runtime.txt` and uses
+`artifacts/mnist_model.onnx` for CPU inference.
 
-## Run with Docker Compose
-
-Build and start the application:
+Docker Compose builds the same application and binds it to local port 8000:
 
 ```bash
 docker compose up --build
 ```
 
-Open `http://127.0.0.1:8000`. Stop and remove the container with:
+Stop it with `docker compose down`. Deployment can select a registry image
+through the `APP_IMAGE` environment variable.
 
-```bash
-docker compose down
+## Training and export
+
+Install the training dependencies in the same environment, then run:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe train.py
+.\.venv\Scripts\python.exe export_onnx.py
 ```
 
-## Train the model
+Training requires CUDA and downloads MNIST to `data/`. It reserves 5,000 of the
+60,000 training images for validation and evaluates the chosen checkpoint on
+the test set. The lowest validation loss determines the checkpoint saved to
+`artifacts/best_model.pt`. Export writes `artifacts/mnist_model.onnx`.
 
-The trained checkpoint is included at `artifacts/best_model.pt`. To train it again:
+## Tests
 
-```bash
-python train.py
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-test.txt
+.\.venv\Scripts\python.exe -m pytest -v
 ```
 
-MNIST is downloaded into `data/` automatically. Training uses CUDA and saves the checkpoint with the lowest validation loss.
+Tests exercise the included ONNX model, input preprocessing, the health and
+prediction endpoints, and invalid-image responses.
 
-Export the trained checkpoint for production inference:
+## Deployment
 
-```bash
-python export_onnx.py
-```
+GitHub Actions runs tests, Terraform validation and a Docker build on pushes and
+pull requests to `main`. A successful push to `main` also publishes the image to
+GitHub Container Registry and updates the Azure VM over SSH. Images receive
+`latest` and commit-hash tags; deployment selects the commit-hash tag.
 
-The API and Docker image use `artifacts/mnist_model.onnx` with ONNX Runtime. PyTorch is only needed for training and exporting.
+Deployment uses these repository secrets:
 
-## Run the tests
+| Secret | Value |
+| --- | --- |
+| `VM_HOST` | VM public IP address |
+| `VM_USER` | SSH username, `azureuser` in the Terraform configuration |
+| `VM_SSH_KEY` | Private SSH key used by the deployment runner |
+| `VM_KNOWN_HOSTS` | Verified SSH host-key entry for the VM |
 
-```bash
-python -m pytest -v
-```
-
-The tests cover model loading, preprocessing, predictions, and API error responses.
-
-## CI/CD
-
-GitHub Actions runs the tests, validates Terraform, and checks the Docker build on every push and pull request. A push to `main` also publishes the image to GitHub Container Registry and deploys it to the Azure VM.
-
-Add these repository secrets before enabling deployment:
-
-- `VM_HOST`: the VM public IP address
-- `VM_USER`: `azureuser`
-- `VM_SSH_KEY`: the complete contents of the VM private key file
-- `VM_KNOWN_HOSTS`: the verified SSH known-host entry for the VM
-
-The deployed image receives both `latest` and Git commit hash tags. The commit hash identifies the exact version running on the server.
+The deployment health check requests `http://localhost/health` on the VM, so the
+host needs a reverse proxy forwarding port 80 to the app on local port 8000.
+See the [project guide](ARCHITECTURE.md) for the request
+flow, infrastructure and deployment prerequisites.

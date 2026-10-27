@@ -23,7 +23,7 @@ class ConvBlock(nn.Sequential):
 
 
 class EnhancedCNN(nn.Module):
-    """A compact three-block CNN designed for accurate MNIST inference."""
+    """Three convolution blocks followed by a 256-unit classifier."""
 
     def __init__(self, num_classes: int = 10) -> None:
         super().__init__()
